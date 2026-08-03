@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Agenda App — Backend (Flask API)
 
 API REST para o aplicativo de agenda: autenticação JWT, eventos, categorias,
@@ -40,18 +39,10 @@ flask --app run.py db init
 flask --app run.py db migrate -m "initial"
 flask --app run.py db upgrade
 ```
-=======
-# Agenda App — Projeto Full Stack
-
-Aplicativo de agenda premium: React + TypeScript + Tailwind no frontend,
-Flask + SQLAlchemy + SQLite no backend, com autenticação JWT, calendário
-com drag-and-drop, tarefas, categorias e dashboard com analytics.
->>>>>>> 2aa88b1 (first commit)
 
 ## Estrutura
 
 ```
-<<<<<<< HEAD
 backend/
 ├── app/
 │   ├── __init__.py          # application factory
@@ -145,49 +136,3 @@ requer `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` no `.env` para ativar de fato.
 - Rate limiting e throttling por IP/usuário
 - Envio de e-mail real no fluxo de recuperação de senha
 - Notificações push (hoje: apenas notificações in-app via polling)
-=======
-agenda-app/
-├── backend/     # API Flask (veja backend/README.md)
-└── frontend/    # App React (veja frontend/README.md)
-```
-
-## Como rodar o projeto completo
-
-**1. Backend**
-```bash
-cd backend
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-python seed.py       # cria o banco e dados de demonstração
-python run.py         # http://localhost:5000
-```
-
-**2. Frontend** (em outro terminal)
-```bash
-cd frontend
-npm install
-cp .env.example .env
-npm run dev            # http://localhost:5173
-```
-
-**3. Acesse** http://localhost:5173 e entre com:
-- E-mail: `demo@agenda.app`
-- Senha: `demo123456`
-
-## Escopo deste MVP
-
-Este projeto cobre a espinha dorsal completa de um aplicativo de agenda de
-produção: autenticação real, modelo de dados completo, API REST
-documentada, calendário com 4 visões (mês/semana/dia/agenda) e
-drag-and-drop/resize, tarefas com checklist, categorias, hábitos, notas
-rápidas, modo foco/Pomodoro, notificações in-app, exportação/importação de
-dados (CSV/Excel/PDF/JSON), anexos de arquivo, atalhos de teclado, undo em
-exclusões e dashboard com analytics — tudo com um design system consistente
-(glassmorphism, dark/light mode, animações).
-
-Itens que ficaram como próximos passos (documentados nos READMEs de cada
-pasta): visão de ano/timeline, OAuth2 completo do Google Calendar (a
-estrutura de endpoints já existe), undo/redo genérico com histórico
-completo, e testes automatizados.
->>>>>>> 2aa88b1 (first commit)
