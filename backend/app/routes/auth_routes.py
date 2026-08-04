@@ -16,6 +16,7 @@ from app.models import User, Share, Team, TeamMember, Notification
 from app.middlewares.auth_middleware import get_current_user
 from app.utils.responses import success, error, ApiError
 from app.utils.validators import require_fields, validate_email, validate_password
+from flask import current_app
 
 PROFILE_AVATAR_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 MB
@@ -159,7 +160,15 @@ def upload_avatar():
         os.remove(filepath)
         raise ApiError("Avatar excede o limite de 5MB", status=422)
 
-    avatar_url = f"{request.url_root.rstrip('/')}/api/auth/avatar/{stored_name}"
+    api_base_url = os.getenv("API_BASE_URL", "").rstrip("/")
+    if not api_base_url:
+        api_base_url = os.getenv("VITE_API_URL", "").rstrip("/")
+    if not api_base_url:
+        api_base_url = current_app.config.get("PUBLIC_API_BASE_URL", "")
+    if not api_base_url:
+        api_base_url = request.url_root.rstrip("/")
+
+    avatar_url = f"{api_base_url}/auth/avatar/{stored_name}" if api_base_url.endswith("/api") else f"{api_base_url}/api/auth/avatar/{stored_name}"
     user.avatar_url = avatar_url
     db.session.commit()
 
