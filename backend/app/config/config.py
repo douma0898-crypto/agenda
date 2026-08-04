@@ -38,6 +38,17 @@ LOCAL_NETWORK_ORIGIN_REGEX = re.compile(
 )
 
 
+def _get_cors_origins() -> list[str]:
+    configured = os.getenv("CORS_ORIGINS", "").strip()
+    if configured:
+        return [origin.strip() for origin in configured.split(",") if origin.strip()]
+
+    if os.getenv("FLASK_ENV", "development") == "production":
+        return ["*"]
+
+    return [LOCAL_NETWORK_ORIGIN_REGEX]
+
+
 class Config:
     """Configuração base, compartilhada por todos os ambientes."""
 
@@ -53,7 +64,7 @@ class Config:
     JWT_HEADER_NAME = "Authorization"
     JWT_HEADER_TYPE = "Bearer"
 
-    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+    CORS_ORIGINS = _get_cors_origins()
     DEFAULT_PAGE_SIZE = 20
     MAX_PAGE_SIZE = 100
 

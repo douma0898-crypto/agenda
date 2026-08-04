@@ -1,8 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const defaultHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-const defaultApiUrl = import.meta.env.PROD ? "/api" : `http://${defaultHost}:5000/api`;
-export const API_BASE_URL = import.meta.env.VITE_API_URL || defaultApiUrl;
+const configuredApiUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").trim();
+const defaultApiUrl = import.meta.env.PROD
+  ? `${typeof window !== "undefined" ? window.location.origin.replace(/\/$/, "") : "http://localhost:3000"}/api`
+  : `http://${defaultHost}:5000/api`;
+export const API_BASE_URL = (configuredApiUrl || defaultApiUrl).replace(/\/$/, "");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
