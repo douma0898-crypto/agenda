@@ -13,11 +13,13 @@ from app.utils.responses import error
 
 
 def create_app(env: str | None = None) -> Flask:
-    env = env or os.getenv("FLASK_ENV", "development")
+    env_name = (env or os.getenv("FLASK_ENV") or "development").strip().lower()
+    if env_name not in config_by_name:
+        env_name = "development"
     app = Flask(__name__)
 
     _load_env_file()
-    app.config.from_object(config_by_name[env])
+    app.config.from_object(config_by_name[env_name])
 
     # Garante que a pasta do banco de dados SQLite existe apenas quando usamos SQLite.
     database_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
@@ -49,7 +51,7 @@ def create_app(env: str | None = None) -> Flask:
 
 
 def _load_env_file() -> None:
-    backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     env_path = os.path.join(backend_dir, ".env")
     if not os.path.isfile(env_path):
         logging.debug("Nenhum .env encontrado em %s", env_path)

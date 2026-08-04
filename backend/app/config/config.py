@@ -40,10 +40,16 @@ LOCAL_NETWORK_ORIGIN_REGEX = re.compile(
 
 def _get_cors_origins() -> list[str]:
     configured = os.getenv("CORS_ORIGINS", "").strip()
-    if configured:
-        return [origin.strip() for origin in configured.split(",") if origin.strip()]
+    flask_env = (os.getenv("FLASK_ENV") or "development").strip().lower()
+    is_production = flask_env == "production"
 
-    if os.getenv("FLASK_ENV", "development") == "production":
+    if configured:
+        origins = [origin.strip() for origin in configured.split(",") if origin.strip()]
+        if is_production and any("localhost" in origin or "127.0.0.1" in origin for origin in origins):
+            return ["*"]
+        return origins
+
+    if is_production:
         return ["*"]
 
     return [LOCAL_NETWORK_ORIGIN_REGEX]
