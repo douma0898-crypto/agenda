@@ -16,12 +16,9 @@ from app.utils.env_loader import load_env_robust  # noqa: E402
 if os.path.isfile(ENV_PATH):
     diag = load_env_robust(ENV_PATH)
     if not diag["loaded_keys"]:
-        print(f"⚠️  Encontrei o .env em {ENV_PATH}, mas não consegui ler nenhuma variável dele.")
-        print("   Confira se o formato é CHAVE=valor, uma por linha.")
+        logging.warning("Arquivo .env encontrado, mas nenhuma variável foi carregada: %s", ENV_PATH)
 else:
-    print(f"⚠️  Nenhum arquivo .env encontrado em {ENV_PATH} — usando apenas valores padrão.")
-    print("   Se você configurou e-mail/SMTP e ele não está funcionando, confira se o arquivo")
-    print("   não ficou salvo como '.env.txt' (extensão escondida pelo Windows Explorer).")
+    logging.info("Nenhum arquivo .env encontrado em %s; usando variáveis de ambiente do Render/host.", ENV_PATH)
 
 from app import create_app
 
