@@ -33,6 +33,7 @@ def create_app(env: str | None = None) -> Flask:
     register_error_handlers(app)
     register_jwt_callbacks(jwt)
     register_blueprints(app)
+    initialize_database(app)
     ensure_notification_defaults(app)
 
     @app.get("/api/health")
@@ -54,6 +55,18 @@ def _load_env_file() -> None:
         logging.info("Variáveis de ambiente carregadas do %s: %s", env_path, ", ".join(diag["loaded_keys"]))
     else:
         logging.warning("O arquivo %s foi encontrado, mas não carregou variáveis: %s", env_path, diag.get("error"))
+
+
+def initialize_database(app: Flask) -> None:
+    with app.app_context():
+        try:
+            inspector = inspect(db.engine)
+            if not inspector.has_table(User.__tablename__):
+                logging.info("Criando tabelas do banco de dados...")
+                db.create_all()
+                logging.info("Tabelas criadas com sucesso.")
+        except Exception as exc:
+            logging.exception("Falha ao inicializar o banco de dados: %s", exc)
 
 
 def ensure_notification_defaults(app: Flask) -> None:
