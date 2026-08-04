@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -45,7 +45,7 @@ export default function App() {
           {showSplash ? (
             <SplashScreen key="splash" />
           ) : (
-            <BrowserRouter key="app">
+            <HashRouter key="app">
               <Routes>
                 <Route path="/agendar/:slug" element={<PublicBookingPage />} />
 
@@ -72,7 +72,7 @@ export default function App() {
 
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
-            </BrowserRouter>
+            </HashRouter>
           )}
         </AnimatePresence>
       </AuthProvider>
