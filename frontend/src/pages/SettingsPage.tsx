@@ -175,7 +175,13 @@ export default function SettingsPage() {
         avatarUrl = uploaded.avatarUrl || avatarUrl;
       }
 
-      const updated = await authService.updateProfile({ ...values, avatarUrl });
+      const updated = await authService.updateProfile({
+        name: values.name,
+        avatarUrl,
+        timeFormat: values.timeFormat as "24h" | "12h",
+        dateFormat: values.dateFormat,
+        language: values.language,
+      });
       updateUser(updated);
       toast.success("Perfil atualizado");
       setAvatarFile(null);

@@ -59,7 +59,7 @@ export function TaskCard({ task, onEdit }: { task: TaskItem; onEdit: (task: Task
         ]}
         onSelect={(value) => {
           if (value === "duplicate") duplicate.mutate(task.id);
-          if (value === "delete") remove.mutate(task);
+          if (value === "delete") remove.mutate(task.id);
         }}
       />
     </motion.div>

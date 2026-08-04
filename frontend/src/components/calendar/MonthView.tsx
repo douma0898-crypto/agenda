@@ -1,4 +1,4 @@
-import { useMemo, useState, DragEvent } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import { Star } from "lucide-react";
@@ -100,7 +100,12 @@ export function MonthView({ referenceDate, events }: MonthViewProps) {
                     key={ev.id}
                     layout
                     draggable
-                    onDragStart={(e: DragEvent<HTMLDivElement>) => e.dataTransfer.setData("text/event-id", ev.id)}
+                    onDragStart={(e) => {
+                      const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>;
+                      if (dragEvent.dataTransfer) {
+                        dragEvent.dataTransfer.setData("text/event-id", ev.id);
+                      }
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       openEventModal(ev);

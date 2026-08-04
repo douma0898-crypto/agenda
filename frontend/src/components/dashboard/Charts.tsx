@@ -56,11 +56,15 @@ export function MonthlyEvolutionChart({ data }: { data: MonthlyEvolutionPoint[] 
               verticalAlign="bottom"
               height={32}
               wrapperStyle={{ fontSize: 12 }}
-              formatter={(value) =>
-                ({ productiveHours: "Horas Produtivas", eventsCount: "Eventos", tasksCompletedCount: "Tarefas Concluídas", avgFocus: "Foco Médio (%)" }[
-                  value
-                ] || value)
-              }
+              formatter={(value) => {
+                const labelMap: Record<string, string> = {
+                  productiveHours: "Horas Produtivas",
+                  eventsCount: "Eventos",
+                  tasksCompletedCount: "Tarefas Concluídas",
+                  avgFocus: "Foco Médio (%)",
+                };
+                return labelMap[String(value)] || String(value);
+              }}
             />
             <Bar yAxisId="left" dataKey="productiveHours" fill="url(#barProductive)" radius={[4, 4, 0, 0]} barSize={16} name="Horas Produtivas" />
             <Bar yAxisId="left" dataKey="eventsCount" fill="url(#barEvents)" radius={[4, 4, 0, 0]} barSize={16} name="Eventos" />
@@ -203,7 +207,10 @@ export function TaskTrendChart({ data }: { data: TaskTrendPoint[] }) {
                 verticalAlign="bottom"
                 height={28}
                 wrapperStyle={{ fontSize: 12 }}
-                formatter={(value) => ({ completed: "Concluídas", created: "Criadas" }[value] || value)}
+                formatter={(value) => {
+                  const labelMap: Record<string, string> = { completed: "Concluídas", created: "Criadas" };
+                  return labelMap[String(value)] || String(value);
+                }}
               />
               <Area
                 type="monotone"

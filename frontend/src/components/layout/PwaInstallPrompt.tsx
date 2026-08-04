@@ -16,9 +16,9 @@ export function PwaInstallPrompt() {
 
     setShareSupported(Boolean(navigator.share));
 
-    if (window.navigator.standalone === false || window.navigator.standalone === undefined) {
+    if ((window.navigator as Navigator & { standalone?: boolean }).standalone === false || (window.navigator as Navigator & { standalone?: boolean }).standalone === undefined) {
       const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone;
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
       if (isIos && !isStandalone) {
         setShowIosPrompt(true);
       }
