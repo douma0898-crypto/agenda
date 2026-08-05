@@ -40,10 +40,14 @@ export default function PublicBookingPage() {
   }, [slug]);
 
   const selectedSlotLabel = useMemo(() => {
-    if (!selectedSlot) return null;
+    if (!selectedSlot || !info) return null;
     const d = new Date(selectedSlot);
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  }, [selectedSlot]);
+    return d.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: info.timezone,
+    });
+  }, [selectedSlot, info]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,7 +99,7 @@ export default function PublicBookingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950 sm:px-6 sm:py-12">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-3xl space-y-5">
         <div className="card mb-5">
           <div className="mb-1 flex items-center gap-2 text-primary-600 dark:text-primary-300">
             <CalendarClock className="h-4 w-4" />
@@ -103,88 +107,91 @@ export default function PublicBookingPage() {
           </div>
           <h1 className="font-display text-lg font-bold text-slate-800 dark:text-white sm:text-xl">{info.title}</h1>
           {info.description && <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">{info.description}</p>}
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
-            <Clock className="h-3.5 w-3.5" /> Duração: {info.slotMinutes} minutos
-          </p>
-        </div>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" /> Duração: {info.slotMinutes} minutos
+            </span>
+            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
+              <span className="rounded-full bg-slate-100 px-2 py-1 dark:bg-white/[0.06]">{info.timezone.replace(/_/g, " ")}</span>
+            </span>
+          </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* Escolha do dia e horário */}
-          <div className="card">
-            <h2 className="mb-3 text-sm font-semibold text-slate-600 dark:text-slate-300">Escolha um horário</h2>
-
-            {info.availability.length === 0 ? (
-              <p className="text-sm text-slate-400">Nenhum horário disponível no momento.</p>
-            ) : (
-              <>
-                <div className="scrollbar-hide mb-4 flex gap-2 overflow-x-auto pb-1">
-                  {info.availability.map((day) => {
-                    const d = new Date(day.date + "T00:00:00");
-                    const active = selectedDay?.date === day.date;
-                    return (
-                      <button
-                        key={day.date}
-                        onClick={() => {
-                          setSelectedDay(day);
-                          setSelectedSlot(null);
-                        }}
-                        className={`flex shrink-0 flex-col items-center rounded-xl border px-3 py-2 text-xs transition-colors ${
-                          active
-                            ? "border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-300"
-                            : "border-slate-200 text-slate-500 dark:border-white/10 dark:text-slate-400"
-                        }`}
-                      >
-                        <span className="uppercase">{WEEKDAY_LABEL[d.getDay()]}</span>
-                        <span className="font-semibold">{d.getDate()}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 xs:grid-cols-4">
-                  {selectedDay?.slots.map((slot) => (
+          {info.availability.length === 0 ? (
+            <p className="text-sm text-slate-400 mt-4">Nenhum horário disponível no momento.</p>
+          ) : (
+            <>
+              <div className="scrollbar-hide mb-4 flex gap-2 overflow-x-auto pb-1">
+                {info.availability.map((day) => {
+                  const d = new Date(day.date + "T00:00:00");
+                  const active = selectedDay?.date === day.date;
+                  return (
                     <button
-                      key={slot.start}
-                      onClick={() => setSelectedSlot(slot.start)}
-                      className={`rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
-                        selectedSlot === slot.start
-                          ? "border-primary-500 bg-primary-500 text-white"
-                          : "border-slate-200 text-slate-600 hover:border-primary-400 dark:border-white/10 dark:text-slate-300"
+                      key={day.date}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDay(day);
+                        setSelectedSlot(null);
+                      }}
+                      className={`flex shrink-0 flex-col items-center rounded-xl border px-3 py-2 text-xs transition-colors ${
+                        active
+                          ? "border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-300"
+                          : "border-slate-200 text-slate-500 dark:border-white/10 dark:text-slate-400"
                       }`}
                     >
-                      {new Date(slot.start).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      <span className="uppercase">{WEEKDAY_LABEL[d.getDay()]}</span>
+                      <span className="font-semibold">{d.getDate()}</span>
                     </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+                  );
+                })}
+              </div>
 
-          {/* Formulário de confirmação */}
-          <div className="card">
-            <h2 className="mb-3 text-sm font-semibold text-slate-600 dark:text-slate-300">Seus dados</h2>
-            {!selectedSlot ? (
-              <p className="text-sm text-slate-400">Selecione um dia e horário ao lado para continuar.</p>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="rounded-xl bg-primary-500/10 px-3.5 py-2.5 text-sm font-medium text-primary-600 dark:text-primary-300">
-                  Horário selecionado: {selectedSlotLabel}
-                </div>
-                <Input label="Nome completo" required value={name} onChange={(e) => setName(e.target.value)} />
-                <Input label="E-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                <Textarea
-                  label="Observações (opcional)"
-                  rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
-                {formError && <p className="text-xs text-danger-500">{formError}</p>}
-                <Button type="submit" className="w-full" loading={submitting}>
-                  Confirmar agendamento
-                </Button>
-              </form>
-            )}
-          </div>
+              <div className="grid grid-cols-3 gap-2 xs:grid-cols-4">
+                {selectedDay?.slots.map((slot) => (
+                  <button
+                    key={slot.start}
+                    type="button"
+                    onClick={() => setSelectedSlot(slot.start)}
+                    className={`rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
+                      selectedSlot === slot.start
+                        ? "border-primary-500 bg-primary-500 text-white"
+                        : "border-slate-200 text-slate-600 hover:border-primary-400 dark:border-white/10 dark:text-slate-300"
+                    }`}
+                  >
+                    {new Date(slot.start).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: info.timezone,
+                    })}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="card">
+          <h2 className="mb-3 text-sm font-semibold text-slate-600 dark:text-slate-300">Seus dados</h2>
+          {!selectedSlot ? (
+            <p className="text-sm text-slate-400">Selecione um dia e horário ao lado para continuar.</p>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="rounded-xl bg-primary-500/10 px-3.5 py-2.5 text-sm font-medium text-primary-600 dark:text-primary-300">
+                Horário selecionado: {selectedSlotLabel}
+              </div>
+              <Input label="Nome completo" required value={name} onChange={(e) => setName(e.target.value)} />
+              <Input label="E-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Textarea
+                label="Observações (opcional)"
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+              {formError && <p className="text-xs text-danger-500">{formError}</p>}
+              <Button type="submit" className="w-full" loading={submitting}>
+                Confirmar agendamento
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </div>

@@ -23,6 +23,7 @@ export interface PublicBookingInfo {
   title: string;
   description: string | null;
   slotMinutes: number;
+  timezone: string;
   availability: DayAvailability[];
 }
 

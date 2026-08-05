@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Link2, Copy, RefreshCw, Mail, Clock, X, CalendarClock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { bookingService, Appointment, BookingSettings } from "@/services/bookingService";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -18,10 +19,28 @@ function guestName(appointment: Appointment): string {
 }
 
 export default function BookingAdminPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [scope, setScope] = useState<"upcoming" | "past">("upcoming");
   const [copied, setCopied] = useState(false);
   const [savingBooking, setSavingBooking] = useState(false);
+  const timezone = user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
+  const locale = user?.language || "pt-BR";
+
+  const formatBookingDate = (date: Date) =>
+    date.toLocaleDateString(locale, {
+      timeZone: timezone,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  const formatBookingTime = (date: Date) =>
+    date.toLocaleTimeString(locale, {
+      timeZone: timezone,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   const { data: booking, refetch: refetchBooking } = useQuery({
     queryKey: ["booking-settings"],
@@ -85,22 +104,34 @@ export default function BookingAdminPage() {
 
       {/* Link compartilhável */}
       <div className="card">
-        <div className="mb-3 flex items-center gap-2">
-          <Link2 className="h-4 w-4 text-primary-500" />
-          <h3 className="font-display font-semibold text-slate-700 dark:text-slate-200">Seu link de agendamento</h3>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+              <Link2 className="h-4 w-4 text-primary-500" />
+              <span>Link público para agendamentos</span>
+            </div>
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-200">Compartilhe sua disponibilidade com segurança</h2>
+          </div>
+          {booking && (
+            <span className="inline-flex items-center rounded-full bg-primary-500/10 px-3 py-1 text-xs font-semibold text-primary-700 dark:bg-primary-500/15 dark:text-primary-200">
+              {booking.enabled ? "Agendamentos ativos" : "Agendamentos pausados"}
+            </span>
+          )}
         </div>
-        <p className="mb-3 text-sm text-slate-400">
-          Quem receber o link só vê seus horários livres — nenhum compromisso ou detalhe da sua agenda fica visível.
+
+        <p className="mb-4 text-sm text-slate-400">
+          Quem receber o link só vê seus horários livres; seus eventos privados permanecem ocultos.
         </p>
+
         {booking && (
           <>
-            <div className="mb-3 flex flex-col gap-2 xs:flex-row">
+            <div className="mb-3 grid gap-3 sm:grid-cols-[1fr_auto]">
               <div className="input-field flex-1 select-all overflow-x-auto whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
                 {bookingService.buildPublicUrl(booking.publicSlug)}
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="secondary" onClick={handleCopyLink}>
-                  <Copy className="h-4 w-4" /> {copied ? "Copiado!" : "Copiar"}
+                  <Copy className="h-4 w-4" /> {copied ? "Copiado" : "Copiar"}
                 </Button>
                 <Button type="button" variant="ghost" onClick={handleRegenerateLink} title="Gerar novo link">
                   <RefreshCw className="h-4 w-4" />
@@ -123,13 +154,22 @@ export default function BookingAdminPage() {
       {/* Preferências de disponibilidade */}
       {booking && (
         <div className="card space-y-4">
-          <h3 className="font-display font-semibold text-slate-700 dark:text-slate-200">Disponibilidade</h3>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-display font-semibold text-slate-700 dark:text-slate-200">Disponibilidade</h3>
+              <p className="text-sm text-slate-400">Defina como você quer receber agendamentos.</p>
+            </div>
+            <div className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
+              Horários exibidos em {timezone.replace(/_/g, " ")}
+            </div>
+          </div>
+
           <Input
             label="Título do compromisso"
             defaultValue={booking.title}
             onBlur={(e) => e.target.value !== booking.title && handleSaveBooking({ title: e.target.value })}
           />
-          <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-slate-600 dark:text-slate-300">Duração de cada horário</span>
               <select
@@ -211,23 +251,32 @@ export default function BookingAdminPage() {
 
       {/* Agendamentos recebidos */}
       <div className="card">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display font-semibold text-slate-700 dark:text-slate-200">Agendamentos recebidos</h3>
-          <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-xs dark:bg-white/[0.06]">
-            {(["upcoming", "past"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setScope(s)}
-                className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
-                  scope === s
-                    ? "bg-white text-primary-600 shadow-sm dark:bg-slate-800 dark:text-primary-300"
-                    : "text-slate-500 dark:text-slate-400"
-                }`}
-              >
-                {s === "upcoming" ? "Próximos" : "Passados"}
-              </button>
-            ))}
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="font-display font-semibold text-slate-700 dark:text-slate-200">Agendamentos recebidos</h3>
+            <p className="text-sm text-slate-400">Veja os compromissos confirmados e cancele apenas quando necessário.</p>
           </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-white/[0.06]">{appointments?.length ?? 0} agendamento(s)</span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 dark:bg-white/[0.06]">{timezone.replace(/_/g, " ")}</span>
+          </div>
+        </div>
+
+        <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-xs dark:bg-white/[0.06]">
+          {(["upcoming", "past"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setScope(s)}
+              className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                scope === s
+                  ? "bg-white text-primary-600 shadow-sm dark:bg-slate-800 dark:text-primary-300"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
+            >
+              {s === "upcoming" ? "Próximos" : "Passados"}
+            </button>
+          ))}
         </div>
 
         {isLoading ? (
@@ -247,32 +296,33 @@ export default function BookingAdminPage() {
               return (
                 <li
                   key={appt.id}
-                  className="flex flex-col gap-2 rounded-xl border border-slate-100 p-3.5 dark:border-white/10 xs:flex-row xs:items-center xs:justify-between"
+                  className="grid gap-3 rounded-2xl border border-slate-100 p-4 dark:border-white/10 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{guestName(appt)}</p>
-                    <p className="flex items-center gap-1 truncate text-xs text-slate-400">
-                      <Mail className="h-3 w-3 shrink-0" /> {appt.contactEmail}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{guestName(appt)}</p>
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:bg-white/[0.08] dark:text-slate-300">
+                        {appt.status === "canceled" ? "Cancelado" : scope === "upcoming" ? "Próximo" : "Concluído"}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                      <Mail className="inline h-3 w-3" /> {appt.contactEmail}
                     </p>
                     {appt.description && (
-                      <p className="mt-1 truncate text-xs text-slate-400">{appt.description}</p>
+                      <p className="mt-2 max-w-xl text-xs text-slate-400 line-clamp-2 dark:text-slate-500">{appt.description}</p>
                     )}
                   </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    <div className="text-right text-xs text-slate-500 dark:text-slate-400">
-                      <p className="flex items-center gap-1 font-medium">
-                        <Clock className="h-3 w-3" />
-                        {start.toLocaleDateString("pt-BR")}
-                      </p>
-                      <p>
-                        {start.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} -{" "}
-                        {end.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
+
+                  <div className="flex flex-col items-start gap-3 sm:items-end">
+                    <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
+                      <p>{formatBookingDate(start)}</p>
+                      <p>{formatBookingTime(start)} – {formatBookingTime(end)}</p>
                     </div>
                     {scope === "upcoming" && appt.status !== "canceled" && (
                       <button
+                        type="button"
                         onClick={() => handleCancel(appt.id)}
-                        className="btn-ghost !p-1.5 rounded-full text-danger-500"
+                        className="btn-ghost !p-2 rounded-full text-danger-500"
                         title="Cancelar agendamento"
                       >
                         <X className="h-4 w-4" />

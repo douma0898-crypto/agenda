@@ -22,6 +22,7 @@ interface ProfileForm {
   avatarUrl?: string;
   timeFormat: string;
   dateFormat: string;
+  timezone: string;
   language: string;
 }
 
@@ -29,6 +30,29 @@ interface PasswordForm {
   currentPassword: string;
   newPassword: string;
 }
+
+const TIMEZONES = [
+  "America/Sao_Paulo",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Argentina/Buenos_Aires",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Europe/Madrid",
+  "Europe/Rome",
+  "Europe/Moscow",
+  "Africa/Johannesburg",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Asia/Seoul",
+  "Australia/Sydney",
+  "UTC",
+];
 
 const SECTIONS = [
   { id: "profile", label: "Perfil", icon: User },
@@ -161,6 +185,7 @@ export default function SettingsPage() {
       avatarUrl: user?.avatarUrl || "",
       timeFormat: user?.timeFormat || "24h",
       dateFormat: user?.dateFormat || "DD/MM/YYYY",
+      timezone: user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo",
       language: user?.language || "pt-BR",
     },
   });
@@ -180,6 +205,7 @@ export default function SettingsPage() {
         avatarUrl,
         timeFormat: values.timeFormat as "24h" | "12h",
         dateFormat: values.dateFormat,
+        timezone: values.timezone,
         language: values.language,
       });
       updateUser(updated);

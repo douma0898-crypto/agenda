@@ -109,6 +109,7 @@ def public_booking_info(slug: str):
         "title": user.booking_title or "Reunião",
         "description": user.booking_description,
         "slotMinutes": user.booking_slot_minutes,
+        "timezone": user.timezone,
         "availability": slots,
     })
 
