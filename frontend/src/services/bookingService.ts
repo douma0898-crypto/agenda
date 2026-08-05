@@ -55,7 +55,7 @@ export const bookingService = {
     const { data } = await api.post("/booking/settings/regenerate-link");
     return data.data as BookingSettings;
   },
-  buildPublicUrl: (slug: string) => `${APP_ORIGIN}/agendar/${slug}`,
+  buildPublicUrl: (slug: string) => `${APP_ORIGIN}/#/agendar/${slug}`,
 
   listAppointments: async (scope: "upcoming" | "past" | "all" = "upcoming") => {
     const { data } = await api.get("/booking/appointments", { params: { scope } });
